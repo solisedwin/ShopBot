@@ -23,8 +23,6 @@ TODO:
 
 - Check if url is incorrect or doesnt lead to home page
 - If kicked out, bot tries to find and checkout clothes again 
-- Look into proxies and helping the bot not get black listed
-- Enter keywords , list  index out of range
 -Loading takes too much time or cant find element (handle error)
 """
 
@@ -46,19 +44,31 @@ class Supreme(object):
 
 		self.driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
 		self.delay = 3.3
+		self.url = ''
+
+
+	def is_kicked_out(self):
+
+		current_url = self.driver.current_url
+
+		if current_url not in self.url and 'checkout' not in self.url:
+			self.run_tasks()
+		else:
+			pass
+
+
 
 
 	def run_tasks(self):
-
 		# KEY: (t-shirts, pants, jeans...etc)
 		for key in self.tasks:
 			
-			url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = key)
+			self.url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = key)
 
 			# keyword_name = keywords[1].strip()
 			# keyword_color = keywords[2].strip()
 
-			self.load_clothing_page(url)
+			self.load_clothing_page(self.url)
 			self.locate_clothes(key);
 
 
@@ -129,12 +139,16 @@ class Supreme(object):
 
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.presence_of_element_located((By.ID, "container")))
-			
+		self.is_kicked_out()
 	
 
 
 	def locate_clothes(self, key):
 	 
+
+		self.is_kicked_out()
+
+
 		clothing_names =  lambda:  self.driver.find_elements_by_css_selector('.product-name > a')
 		color_items = lambda : self.driver.find_elements_by_css_selector('.product-style > a')
 	
@@ -143,6 +157,11 @@ class Supreme(object):
 
 		#Connect clothing name and color together, to check values only once
 		for index in range(items_length):
+
+			#r key (t-shirts, hats, pants, ...) is emoty without any clothing brand names. Exit loop for this key
+			if not self.tasks[key]:
+				break
+
 
 			name = clothing_names()[index]		
 			color = color_items()[index]
@@ -155,6 +174,15 @@ class Supreme(object):
 			if (name_txt in self.tasks[key] and color_txt in self.tasks[key][name_txt]):
 				print('Found a match. Keyword: ' + name.text + ' Color ' + color.text)  			
 				
+				#Removes color from set
+				self.tasks[key][name_txt].discard(color_txt)
+
+				#If article clothing name is empty, remove from key dict
+				if not self.tasks[key][name_txt]:
+					self.tasks[key].pop(name_txt)
+
+
+
 				#Add ID to a/(href) tag. So we can access it quick and traverse the nodes
 				self.driver.execute_script("arguments[0].setAttribute('id','name-link-id')", name)
 			
@@ -268,6 +296,9 @@ class Supreme(object):
 
 
 	def is_item_sold_out(self,item_to_hover, name):
+
+		self.is_kicked_out()
+
 
 		try:
 			x = item_to_hover.location['x']
