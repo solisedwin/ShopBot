@@ -15,7 +15,9 @@ from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 
 import time
+import schedule
 import random
+
 
 
 """
@@ -49,9 +51,10 @@ class Supreme(object):
 
 	def is_kicked_out(self):
 
+		#Current url page we are in now
 		current_url = self.driver.current_url
 
-		if current_url not in self.url or 'out_of_stock' in self.url:
+		if current_url != self.url or 'out_of_stock' in current_url:
 			self.run_tasks()
 		else:
 			pass
@@ -60,9 +63,16 @@ class Supreme(object):
 
 
 	def run_tasks(self):
+
+
+		schedule.every(8).seconds.do(self.is_kicked_out)	
+
+
 		# KEY: (t-shirts, pants, jeans...etc)
 		for key in self.tasks:
-			
+
+			schedule.run_pending()
+    	
 			self.url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = key)
 
 			# keyword_name = keywords[1].strip()
@@ -139,16 +149,11 @@ class Supreme(object):
 
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.presence_of_element_located((By.ID, "container")))
-		self.is_kicked_out()
 	
 
 
 	def locate_clothes(self, key):
-	 
-
-		self.is_kicked_out()
-
-
+	
 		clothing_names =  lambda:  self.driver.find_elements_by_css_selector('.product-name > a')
 		color_items = lambda : self.driver.find_elements_by_css_selector('.product-style > a')
 	
@@ -296,9 +301,6 @@ class Supreme(object):
 
 
 	def is_item_sold_out(self,item_to_hover, name):
-
-		self.is_kicked_out()
-
 
 		try:
 			x = item_to_hover.location['x']

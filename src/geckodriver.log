@@ -10967,3 +10967,21 @@ bail@chrome://marionette/content/sync.js:237:64
 1578546977333	Marionette	WARN	TLS certificate errors will be ignored for this session
 JavaScript warning: https://d17ol771963kd3.cloudfront.net/assets/application-e56fba23b9a365ceb26721fbf3248c85.js, line 18736: unreachable code after return statement
 JavaScript warning: https://d17ol771963kd3.cloudfront.net/assets/application-e56fba23b9a365ceb26721fbf3248c85.js, line 18736: unreachable code after return statement
+1578810503585	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileufrIpl"
+*** You are running in headless mode.
+1578810503878	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: mozillaAddons
+1578810503878	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: telemetry
+1578810503878	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: resource://pdf.js/
+1578810503878	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: about:reader*
+1578810505325	Marionette	INFO	Listening on port 35161
+1578810505394	Marionette	WARN	TLS certificate errors will be ignored for this session
+1578810540026	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileBR94WV"
+*** You are running in headless mode.
+1578810540329	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: mozillaAddons
+1578810540329	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: telemetry
+1578810540329	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: resource://pdf.js/
+1578810540329	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: about:reader*
+1578810541764	Marionette	INFO	Listening on port 44085
+1578810541835	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://d17ol771963kd3.cloudfront.net/assets/application-e56fba23b9a365ceb26721fbf3248c85.js, line 18736: unreachable code after return statement
+JavaScript warning: https://d17ol771963kd3.cloudfront.net/assets/application-e56fba23b9a365ceb26721fbf3248c85.js, line 18736: unreachable code after return statement
