@@ -43,7 +43,7 @@ class Supreme(object):
 		#profile.set_preference("general.useragent.override", user_agent)
 
 		self.driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
-		self.delay = 3.3
+		self.delay = 3.5
 		self.url = ''
 
 
@@ -51,7 +51,7 @@ class Supreme(object):
 
 		current_url = self.driver.current_url
 
-		if current_url not in self.url and 'checkout' not in self.url:
+		if current_url not in self.url or 'out_of_stock' in self.url:
 			self.run_tasks()
 		else:
 			pass
