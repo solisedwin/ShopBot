@@ -66,7 +66,7 @@ class Supreme(object):
 	def is_kicked_out(self):
 		#Current url page we are in now
 		if 'out_of_stock' in self.driver.current_url:
-			self.run_tasks()
+			schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
 		else:
 			print('Not kicked out yet')
 
@@ -81,7 +81,7 @@ class Supreme(object):
 
 
 	def run_tasks(self):
-		schedule.every(5).seconds.do(self.is_kicked_out)
+		schedule.every(4).seconds.do(self.is_kicked_out)
 		
 		# KEY: (t-shirts, pants, jeans...etc)
 		for key in self.tasks:
