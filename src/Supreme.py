@@ -17,21 +17,22 @@ from urllib.request import Request, urlopen
 import time
 import schedule
 import random
+import requests
 
 
 
 """
 TODO:
-
-- Check if url is incorrect or doesnt lead to home page
-- If kicked out, bot tries to find and checkout clothes again 
 -Loading takes too much time or cant find element (handle error)
 """
 
 class Supreme(object):
 
+
 	def __init__(self, tasks, proxies):
 
+		schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
+		
 		self.tasks = tasks
 
 		options = Options()
@@ -49,43 +50,51 @@ class Supreme(object):
 		self.url = ''
 
 
-	def is_kicked_out(self):
 
-		#Current url page we are in now
-		current_url = self.driver.current_url
-
-		if current_url != self.url or 'out_of_stock' in current_url:
+	def access_to_site(self):		
+		request = requests.get('https://www.supremenewyork.com/shop/all')
+		if request.status_code == 200:
+			print('Web site is now open for shopping!')
+			schedule.clear('kicked-out')
 			self.run_tasks()
 		else:
-			pass
+			print('Supreme site isnt open now') 
+		
+
+
+
+	def is_kicked_out(self):
+		#Current url page we are in now
+		if 'out_of_stock' in self.driver.current_url:
+			self.run_tasks()
+		else:
+			print('Not kicked out yet')
+
+
+
+	def run_schedule(self):
+		while True:
+			schedule.run_pending()
+			time.sleep(1)
 
 
 
 
 	def run_tasks(self):
-
-
-		schedule.every(8).seconds.do(self.is_kicked_out)	
-
-
+		schedule.every(5).seconds.do(self.is_kicked_out)
+		
 		# KEY: (t-shirts, pants, jeans...etc)
 		for key in self.tasks:
 
-			schedule.run_pending()
-    	
 			self.url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = key)
-
-			# keyword_name = keywords[1].strip()
-			# keyword_color = keywords[2].strip()
-
 			self.load_clothing_page(self.url)
 			self.locate_clothes(key);
 
 
 		self.checkout_item()
-		# self.driver.close()	
+		# self.driver.close()		
+	 		
 
-	 
 
 	def get_proxy_config(self,proxies):
 
@@ -184,9 +193,8 @@ class Supreme(object):
 
 				#If article clothing name is empty, remove from key dict
 				if not self.tasks[key][name_txt]:
-					self.tasks[key].pop(name_txt)
-
-
+					#self.tasks[key].pop(name_txt)
+					del self.tasks[key]
 
 				#Add ID to a/(href) tag. So we can access it quick and traverse the nodes
 				self.driver.execute_script("arguments[0].setAttribute('id','name-link-id')", name)
@@ -247,11 +255,9 @@ class Supreme(object):
 		action = ActionChains(self.driver)
 
 
-
 		for index, tag in enumerate(select_tags):
 
-			element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))
-		   
+			element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))		   
 			action.move_to_element(element)
 			
 			select = Select(element)
@@ -266,7 +272,6 @@ class Supreme(object):
 
 
 
-	#On checkout item page. Click add to cart           
 	def add_to_cart(self):
 	
 		wait = WebDriverWait(self.driver, self.delay)
@@ -281,17 +286,6 @@ class Supreme(object):
 	
 		wait.until(EC.presence_of_element_located((By.ID, "cart")))
 
-	
-		"""	
-		wait_checkOut = WebDriverWait(self.driver, self.delay)
-		wait_checkOut.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.checkout")))    
-
-		checkout_btn = self.driver.find_element_by_css_selector('a.checkout')
-		
-		action_checkOut = ActionChains(self.driver) 
-		hov2 = action_checkOut.move_to_element(checkout_btn)
-		hov2.click().perform()      
-		"""
 		
 
 	def click_item(self, item):
