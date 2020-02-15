@@ -43,10 +43,10 @@ class Supreme(object):
 		user_agent = self.get_user_agent()
 
 		profile = webdriver.FirefoxProfile()
-		#profile.set_preference("general.useragent.override", user_agent)
+		profile.set_preference("general.useragent.override", user_agent)
 
 		self.driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
-		self.delay = 3.5
+		self.delay = 3.1
 		self.url = ''
 
 
