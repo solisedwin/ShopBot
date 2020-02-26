@@ -1,0 +1,43 @@
+{
+
+		"orders": {
+			"jackets": [{
+				"name": "Faux Fur Varsity",
+				"color": "",
+				"size": "M"
+			}],
+
+			"t-shirts": [
+				{
+					"name": "Naomi",
+					"color": "",
+					"size": "XL"
+				},
+
+				{
+					"name": "Black Cat",
+					"color": "Black",
+					"size": "S"
+				}
+			],
+
+			"pants": [{
+				"name": "Paneled Track",
+				"color": "yellow",
+				"size": "L"
+			}]
+		},
+
+		"payment": {
+
+			"name": "John Doe",
+			"email": "john_doe_fake@aol.com",
+			"phone": "1111111111",
+			"address": "78 fake address ave",
+			"apt num": "3L",
+			"zip": "12345",
+			"town": "Oniondale",
+			"card": "5412 7543 5678",
+			"cvv": "503"
+		}
+}

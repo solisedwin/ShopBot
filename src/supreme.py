@@ -14,11 +14,13 @@ from selenium.webdriver.common.proxy import *
 from bs4 import BeautifulSoup 
 from urllib.request import Request, urlopen
 
+from item import ClothingItem
+
 import time
 import schedule
 import random
 import requests
-
+import json
 
 
 """
@@ -26,29 +28,16 @@ TODO:
 -Loading takes too much time or cant find element (handle error)
 """
 
-class Supreme(object):
+class SupremeWeb(object):
 
 
-	def __init__(self, tasks, proxies):
+	def __init__(self, driver):
 
-		schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
-		
-		self.tasks = tasks
-
-		options = Options()
-		options.headless = True
-
-		proxy = self.get_proxy_config(proxies)
-
-		user_agent = self.get_user_agent()
-
-		profile = webdriver.FirefoxProfile()
-		profile.set_preference("general.useragent.override", user_agent)
-
-		self.driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
+		self.driver = driver
 		self.delay = 3.1
-		self.url = ''
-
+		schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
+		self.current_item = None	
+		
 
 
 	def access_to_site(self):		
@@ -59,8 +48,41 @@ class Supreme(object):
 			self.run_tasks()
 		else:
 			print('Supreme site isnt open now') 
-		
 
+
+
+	def json_clothing_orders(self):
+		with open('customer.json') as file:
+			json_file = json.load(file)
+			clothes = json_file['orders']
+
+			for item in clothes:
+				clothing_article = item.strip()
+				clothes_length = len(clothing_article)
+			
+				url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = clothing_article)
+				self.load_clothing_page(url)
+
+				for index in range(clothes_length):
+
+					clothing_information = clothing_article[index]
+					
+					clothing_name = clothing_information['name']
+					clothing_color = clothing_information['color']
+					clothing_size = clothing_information['size']
+
+					clothing_item = ClothingItem(name = clothing_name, color = clothing_color, size = clothing_size)
+					self.current_item = clothing_item
+					
+					self.search_clothes()
+
+
+
+
+
+			self.checkout_item()
+				
+			  
 
 
 	def is_kicked_out(self):
@@ -79,79 +101,13 @@ class Supreme(object):
 
 
 
-
 	def run_tasks(self):
 		schedule.every(4).seconds.do(self.is_kicked_out)
-		
-		# KEY: (t-shirts, pants, jeans...etc)
-		for key in self.tasks:
-
-			self.url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = key)
-			self.load_clothing_page(self.url)
-			self.locate_clothes(key);
-
-
-		self.checkout_item()
+		self.json_clothing_orders()
 		# self.driver.close()		
-	 		
 
 
-	def get_proxy_config(self,proxies):
-
-		if(len(proxies) > 0):
-			myProxy = proxies.pop()
-
-			proxy = Proxy({
-				'proxyType': ProxyType.MANUAL,
-				'httpProxy': myProxy,
-				'ftpProxy': myProxy,
-				'sslProxy': myProxy,
-				'noProxy': '' # set this value as desired
-			})
-
-			self.proxies = proxies
-			return proxy
-		else:
-			return ''
-
-	def get_user_agent(self):
-
-		user_agent_list = [
-			#Chrome
-			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-			'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-			'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
 			
-			#Firefox
-			'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)',
-			'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)',
-			'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (Windows NT 6.2; WOW64; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.0; Trident/5.0)',
-			'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
-			'Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko',
-			'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)',
-			'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
-			'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
-			]
-
-
-		user_agent = random.choice(user_agent_list)
-		# headers = {'User-Agent': user_agent}
-		return user_agent
-	
-
-
 	def load_clothing_page(self, url):
 
 		self.driver.get(url)
@@ -161,7 +117,8 @@ class Supreme(object):
 	
 
 
-	def locate_clothes(self, key):
+
+	def search_clothes(self):
 	
 		clothing_names =  lambda:  self.driver.find_elements_by_css_selector('.product-name > a')
 		color_items = lambda : self.driver.find_elements_by_css_selector('.product-style > a')
@@ -172,7 +129,7 @@ class Supreme(object):
 		#Connect clothing name and color together, to check values only once
 		for index in range(items_length):
 
-			#r key (t-shirts, hats, pants, ...) is emoty without any clothing brand names. Exit loop for this key
+			#r key (t-shirts, hats, pants, ...) is empty without any clothing brand names. Exit loop for this key
 			if not self.tasks[key]:
 				break
 
