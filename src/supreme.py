@@ -126,6 +126,9 @@ class SupremeWeb(object):
 	
 		items_length = len(clothing_names())
 
+		name = self.current_item.name
+
+
 		#Connect clothing name and color together, to check values only once
 		for index in range(items_length):
 

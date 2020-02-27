@@ -1,14 +1,9 @@
 
-from bs4 import BeautifulSoup 
+
 from bot import SupremeBot
 from supreme import SupremeWeb
 import time
 
-import requests
-from lxml.html import fromstring
-
-import time, schedule
-		 
 
 class MainClass(object):
 
