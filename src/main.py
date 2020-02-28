@@ -118,7 +118,7 @@ class WebCalls(object):
 		except Error as e:
 			print('~~ Error trying to get proxy')
 			print('~~Error: ' + str(e))       
-		return prox
+		return proxies
 		
 
 
