@@ -14,13 +14,13 @@ from selenium.webdriver.common.proxy import *
 from bs4 import BeautifulSoup 
 from urllib.request import Request, urlopen
 
-from item import ClothingItem
 
 import time
 import schedule
 import random
 import requests
 import json
+import sys
 
 
 """
@@ -34,48 +34,59 @@ class SupremeWeb(object):
 	def __init__(self, driver):
 
 		self.driver = driver
-		self.delay = 3.1
-		schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
-		self.current_item = None	
-		
+		self.delay = 3.5
+		schedule.every(3).seconds.do(self.access_home_site).tag('kicked-out')   
+		self.run_schedule()
 
 
-	def access_to_site(self):		
-		request = requests.get('https://www.supremenewyork.com/shop/all')
+	def access_home_site(self):     
+		request = requests.get('https://www.supremenewyork.com/shop/all/')
 		if request.status_code == 200:
 			print('Web site is now open for shopping!')
 			schedule.clear('kicked-out')
-			self.run_tasks()
+			self.run_bot()
 		else:
 			print('Supreme site isnt open now') 
 
 
 
+	def run_bot(self):
+		schedule.every(4).seconds.do(self.is_kicked_out)
+		# self.run_schedule()
+		self.json_clothing_orders()
+		#self.driver.close()        
+
+
+
 	def json_clothing_orders(self):
+
 		with open('customer.json') as file:
 			json_file = json.load(file)
 			clothes = json_file['orders']
 
 			for item in clothes:
 				clothing_article = item.strip()
-				clothes_length = len(clothing_article)
-			
-				url  = "https://www.supremenewyork.com/shop/all/{clothing}".format(clothing = clothing_article)
-				self.load_clothing_page(url)
+				print(clothing_article)
 
-				for index in range(clothes_length):
+				clothing_information_list = []
 
-					clothing_information = clothing_article[index]
-					
-					clothing_name = clothing_information['name']
-					clothing_color = clothing_information['color']
-					clothing_size = clothing_information['size']
+				for info in clothes[clothing_article]:
 
-					clothing_item = ClothingItem(name = clothing_name, color = clothing_color, size = clothing_size)
-					self.current_item = clothing_item
-					
-					self.search_clothes()
+					name = info['name']
+					color = info['color']
+					size = info['size']
 
+					#Tuple data structure to perserve/pack clothing information together
+					clothing_info = (clothing_article, name, color, size)
+
+					"""
+					List is made so that we have all the values together. In order to look through clohthing-article page ONCE
+					Also, to avoid heavy computation for each iteration
+					"""
+					clothing_information_list.extend(clothing_info)
+
+
+				self.search_match_clothes(clothing_information_list)
 
 
 
@@ -86,9 +97,11 @@ class SupremeWeb(object):
 
 
 	def is_kicked_out(self):
-		#Current url page we are in now
-		if 'out_of_stock' in self.driver.current_url:
-			schedule.every(3).seconds.do(self.access_to_site).tag('kicked-out')	
+		current_url = self.driver.current_url
+
+		#We are kicked out of page. Website error due to traffic
+		if 'out_of_stock' in current_url or '/shop/all' not in current_url:
+			schedule.every(2).seconds.do(self.access_home_site).tag('kicked-out')   
 		else:
 			print('Not kicked out yet')
 
@@ -100,15 +113,10 @@ class SupremeWeb(object):
 			time.sleep(1)
 
 
-
-	def run_tasks(self):
-		schedule.every(4).seconds.do(self.is_kicked_out)
-		self.json_clothing_orders()
-		# self.driver.close()		
-
-
 			
-	def load_clothing_page(self, url):
+	def load_clothing_page(self, clothing_article):
+
+		url = "https://www.supremenewyork.com/shop/all/{}".format(clothing_article)
 
 		self.driver.get(url)
 
@@ -118,11 +126,38 @@ class SupremeWeb(object):
 
 
 
-	def search_clothes(self):
-	
+	def search_match_clothes(self, clothing_info_list):
+
+		clothing_article = clothing_information_list[0]
+		self.load_clothing_page(clothing_article)
+
+		clothing_name = clothing_info_list[1]
+		clothing_color = clothing_info_list[2]
+		clothing_size = clothing_info_list[3]
+
+		name_xpath_locator = "//div[contains(@class, 'product-name') and contains(., '{}')]".format(clothing_name)
+		color_xpath_locator = "/div[contains(@class, 'product-style') and contains(., '{}')]".format(clothing_color)
+
+		"""
+		#### Different lengths. Solve problem using cycles ??? Cant zip ?????
+		#### Better xpath method ??
+		"""
+
+		search_name_list = self.driver.find_elements_by_xpath(name_xpath_locator)
+		search_color_list = self.driver.find_elements_by_xpath(color_xpath_locator)
+
+
+
+
+
+
+
+
+
+		"""
 		clothing_names =  lambda:  self.driver.find_elements_by_css_selector('.product-name > a')
 		color_items = lambda : self.driver.find_elements_by_css_selector('.product-style > a')
-	
+		
 	
 		items_length = len(clothing_names())
 
@@ -137,7 +172,7 @@ class SupremeWeb(object):
 				break
 
 
-			name = clothing_names()[index]		
+			name = clothing_names()[index]      
 			color = color_items()[index]
 
 			name_txt = name.text.lower().strip()
@@ -146,7 +181,7 @@ class SupremeWeb(object):
 			print(name_txt + ' ' + color_txt)
 
 			if (name_txt in self.tasks[key] and color_txt in self.tasks[key][name_txt]):
-				print('Found a match. Keyword: ' + name.text + ' Color ' + color.text)  			
+				print('Found a match. Keyword: ' + name.text + ' Color ' + color.text)              
 				
 				#Removes color from set
 				self.tasks[key][name_txt].discard(color_txt)
@@ -177,6 +212,7 @@ class SupremeWeb(object):
 			else:
 				pass
 	
+		"""
 
 
 
@@ -217,7 +253,7 @@ class SupremeWeb(object):
 
 		for index, tag in enumerate(select_tags):
 
-			element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))		   
+			element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))        
 			action.move_to_element(element)
 			
 			select = Select(element)
