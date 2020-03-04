@@ -2,28 +2,22 @@
 
 		"orders": {
 			"jackets": [{
-				"name": "Faux Fur Varsity",
-				"color": "",
+				"name": "GORE-TEX Anorak",
+				"color": "Green",
 				"size": "M"
 			}],	
 
-			"t-shirts": [
+			"t-shirts": [	
 				{
-					"name": "Naomi",
-					"color": "",
-					"size": "XL"
-				},
-
-				{
-					"name": "Black Cat",
+					"name": "Tupac Hologram Tee",
 					"color": "Black",
 					"size": "S"
 				}
 			],
 
 			"pants": [{
-				"name": "Paneled Track",
-				"color": "yellow",
+				"name": "GORE-TEX Pant",
+				"color": "Black",
 				"size": "L"
 			}]
 		},

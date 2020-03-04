@@ -9,7 +9,7 @@ import requests
 from lxml.html import fromstring
 
 import re
-import time, schedule
+import  schedule
 import random
 
 		 
@@ -22,7 +22,7 @@ class SupremeBot(object):
 
 	def create_bot(self):
 		options = Options()
-		options.headless = True
+		#options.headless = True
 
 		proxies = self.proxy_scrap()
 		proxy = self.get_proxy_config(proxies)
