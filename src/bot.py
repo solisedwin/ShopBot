@@ -1,8 +1,8 @@
 
-from bs4 import BeautifulSoup 
+from bs4 import BeautifulSoup
 
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.proxy import *   
+from selenium.webdriver.common.proxy import *
 from selenium import webdriver
 
 import requests
@@ -12,7 +12,7 @@ import re
 import  schedule
 import random
 
-		 
+
 
 class SupremeBot(object):
 
@@ -21,6 +21,7 @@ class SupremeBot(object):
 
 
 	def create_bot(self):
+		print('-- Creating Bot -- ')
 		options = Options()
 		#options.headless = True
 
@@ -42,7 +43,7 @@ class SupremeBot(object):
 		response = requests.get(url)
 
 		parser = fromstring(response.text)
-		proxies = set() 
+		proxies = set()
 
 		try:
 			for i in parser.xpath('//tbody/tr')[:5]:
@@ -50,13 +51,11 @@ class SupremeBot(object):
 					#Grabbing IP and corresponding PORT
 					proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
 					proxies.add(proxy)
-	 
+
 		except Error as e:
 			print('~~ Error trying to get proxy')
-			print('~~Error: ' + str(e))       
+			print('~~Error: ' + str(e))
 		return proxies
-
-
 
 
 	def get_proxy_config(self,proxies):
@@ -77,9 +76,6 @@ class SupremeBot(object):
 		else:
 			return ''
 
-
-
-
 	def get_user_agent(self):
 
 		user_agent_list = [
@@ -94,7 +90,7 @@ class SupremeBot(object):
 			'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
 			'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-			
+
 			#Firefox
 			'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)',
 			'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
@@ -115,5 +111,4 @@ class SupremeBot(object):
 		user_agent = random.choice(user_agent_list)
 		# headers = {'User-Agent': user_agent}
 		return user_agent
-	
 

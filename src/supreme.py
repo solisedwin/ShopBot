@@ -3,7 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
+
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
@@ -26,13 +29,11 @@ import sys
 """
 TODO:
 -Loading takes too much time or cant find element (handle error)
-- Ingore case for Clothgin Item name and color. Change xpath 
+- Ingore case for Clothing Item name and color. Change xpath 
 
 
 ('//div[@class="inner-article" and //*//text()[contains(translate(.,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"), "Bling Tee")] 
 and //*//text()[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"Red")] ]')
-
-
 """
 
 class SupremeWeb(object):
@@ -76,9 +77,11 @@ class SupremeWeb(object):
 			json_file = json.load(file)
 			clothes = json_file['orders']
 
-			for item in clothes:
-				clothing_article = item.strip()
-				clothing_information_list = []
+			for clothing_article in clothes:
+			
+				clothing_article = clothing_article.strip()
+				
+				self.load_clothing_page(clothing_article)
 
 				for info in clothes[clothing_article]:
 
@@ -87,19 +90,12 @@ class SupremeWeb(object):
 					size = info['size'].strip()
 
 					#Tuple data structure to perserve/pack clothing information together
-					clothing_info = (clothing_article, name, color, size)
+					clothing_info = (name, color, size)				
+					self.search_match_clothes(clothing_info)
+				
+					
 
-					""" 
-					List is made so that we have all the article clothing values together. In order to look through clohthing-article page ONCE
-					Also, to avoid heavy computation for each iteration
-					"""
-
-					clothing_information_list.extend(clothing_info)
-
-				self.search_match_clothes(clothing_information_list)
-
-
-			#self.checkout_item()
+			self.checkout_items()
 				
 			  
 
@@ -109,7 +105,7 @@ class SupremeWeb(object):
 
 		#We are kicked out of page. Website error due to traffic
 		if 'out_of_stock' in current_url or '/shop/all' not in current_url:
-			schedule.every(2).seconds.do(self.access_home_site).tag('kicked-out')   
+			schedule.every(3).seconds.do(self.access_home_site).tag('kicked-out')   
 		else:
 			print('Not kicked out yet')
 
@@ -127,67 +123,71 @@ class SupremeWeb(object):
 		url = "https://www.supremenewyork.com/shop/all/{}".format(clothing_article)
 
 		self.driver.get(url)
-
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.presence_of_element_located((By.ID, "container")))
 	
 
 
+	def search_match_clothes(self, clothing_info):	
 
-	def search_match_clothes(self, clothing_info_list):
-
-		clothing_article = clothing_info_list[0]
-		self.load_clothing_page(clothing_article)
-
-		clothing_name = clothing_info_list[1]
-		clothing_color = clothing_info_list[2]
-		clothing_size = clothing_info_list[3]
+		clothing_name = clothing_info[0]
+		clothing_color = clothing_info[1]
+		clothing_size = clothing_info[2]
 
 		item_xpath_locator = '//div[@class="inner-article" and .//*[contains(text(), "{}")] and .//*[contains(text(), "{}")]]'.format(clothing_name, clothing_color)
-		
+			
+
 		print("Looking at " + str(clothing_name) + " with color " + str(clothing_color) + " at size " + str(clothing_size))
 
-		try:
-			supreme_item_div = self.driver.find_element_by_xpath(item_xpath_locator)            
-			self.driver.execute_script("arguments[0].setAttribute('data-selected-item','item-looking-at')", supreme_item_div)
-		
-			is_sold_out = self.is_item_sold_out(item_to_hover =  supreme_item_div)
-			sys.exit(1)
 
-			if(is_sold_out):
-				print('*** Item is sold out ! ***')
-			else:   
-				self.click_item(supreme_item_div)
-				self.add_to_cart()
+		try:
+			
+			supreme_item_div = self.driver.find_element_by_xpath(item_xpath_locator)            
+			self.driver.execute_script("arguments[0].scrollIntoView(true);", supreme_item_div);
+
+			self.driver.execute_script("arguments[0].setAttribute('data-selected-item','item-looking-at')", supreme_item_div)
+			
+			#Hover over clothing item we are looking at, to see if sold_out_tag is present and shows up in the DOM 
+			hover = ActionChains(self.driver).move_to_element(supreme_item_div).perform()
+			
+			sold_out_tag = self.driver.find_element_by_xpath('//div[@data-selected-item="item-looking-at" and //div[@class = "sold_out_tag"]]')
+			tag_text = str(sold_out_tag.text)
+
+			self.driver.execute_script("arguments[0].removeAttribute('data-selected-item')", sold_out_tag)
+
+			if 'sold out' in tag_text:
+				print("~~ Item is sold out ")
+			else:				
+				
+				self.add_to_cart(sold_out_tag)
 				self.driver.back()
 				self.driver.refresh();
 		except Exception as e:
-			print("~~Error. " + str(e))
+			print('~~ 	Error: ' + str(e))
 
 
 
-	def is_item_sold_out(self,item_to_hover):
+	def add_to_cart(self, sold_out_tag):
 
-		try:
-			x = item_to_hover.location['x']
-			y = item_to_hover.location['y']
+		self.click_item(sold_out_tag)
 
-			scroll_by_coord = 'window.scrollTo(%s,%s);' % (x,y)
-			self.driver.execute_script(scroll_by_coord)
-			#If sold out tag exists on outer item div, then the item is no longer in stock. 
-			sold_out_tag_exist = self.driver.find_element_by_xpath('boolean(//div[@data-selected-item = "item-looking-at"]/a/div[contains(@class, "sold_out_tag")])');
-			print('Type: ' + str(type(sold_out_tag_exist)))
-			sys.exit(1)
+		wait = WebDriverWait(self.driver, self.delay)
+		wait.until(EC.element_to_be_clickable((By.ID, "details")))      
+		
+		add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
+	
+		action = ActionChains(self.driver)
+		hov = action.move_to_element(add_to_cart_btn).click().perform
+		
+		wait.until(EC.presence_of_element_located((By.ID, "cart")))
+		print('** Added item to cart ** ')
+		print()
 
-			if sold_out_tag_exist:
-				return True
-			else:
-				return False
-				
-		except Exception as e:
-			print('~~ Exception in is_item_sold_out fun: ' + str(e))
-			return False
+		
 
+	def click_item(self, item):
+		action = ActionChains(self.driver)
+		action.click(item).perform()
 
 
 	def process_payment(self, action):
@@ -195,7 +195,7 @@ class SupremeWeb(object):
 		action.move_to_element(payment_btn).click().perform() 
 
 
-	def checkout_item(self):
+	def checkout_items(self):
 
 		#Redirect to process page
 		self.driver.get('https://www.supremenewyork.com/checkout')
@@ -240,27 +240,6 @@ class SupremeWeb(object):
 
 
 
-
-	def add_to_cart(self):
-	
-		wait = WebDriverWait(self.driver, self.delay)
-		wait.until(EC.element_to_be_clickable((By.ID, "details")))      
-		
-		add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
-	
-		action = ActionChains(self.driver)
-		hov = action.move_to_element(add_to_cart_btn)
-		hov.click().perform()
-	
-		wait.until(EC.presence_of_element_located((By.ID, "cart")))
-		print('* Added item to cart ** ')
-		print()
-
-		
-
-	def click_item(self, item):
-		action = ActionChains(self.driver)
-		action.click(item).perform()
 
 
 
