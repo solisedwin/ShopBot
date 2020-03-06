@@ -1,3 +1,4 @@
 beautifulsoup4==4.8.1  
 selenium==3.141.0 
 requests==2.22.0
+schedule==0.6.0

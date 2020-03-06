@@ -1,13 +1,7 @@
 {
-
 		"orders": {
-			"jackets": [{
-				"name": "GORE-TEX Anorak",
-				"color": "Green",
-				"size": "M"
-			}],	
-
-			"t-shirts": [	
+			
+			"shirts": [	
 				{
 					"name": "Tupac Hologram Tee",
 					"color": "Black",
@@ -26,7 +20,14 @@
 				"name": "GORE-TEX Pant",
 				"color": "Black",
 				"size": "L"
+			}],
+
+			"hats" : [{
+				"name": "Field Camp Cap",
+				"color": "Red",
+				"size": ""
 			}]
+
 		},
 
 		"payment": {
@@ -35,10 +36,16 @@
 			"email": "john_doe_fake@aol.com",
 			"phone": "1111111111",
 			"address": "78 fake address ave",
-			"apt num": "3L",
+			"apt_num": "3L",
 			"zip": "12345",
 			"town": "Oniondale",
-			"card": "5412 7543 5678",
-			"cvv": "503"
+			"card": "5412 9523 5678",
+			"cvv": "503",
+
+			"state": "NY",
+			"country":"USA",
+			"card_expiration_month": "10",
+			"card_expiration_year": "2025"
+
 		}
 }
