@@ -39,33 +39,36 @@ and //*//text()[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijkl
 class SupremeWeb(object):
 
 	def __init__(self, driver):
-
 		self.driver = driver
 		self.delay = 3.5
-		"""
-		#schedule.every().thursday.at("11:00").do(self.run_bot)
-		print('-- Waiting for 11:00 AM ono Thursday --')
-		"""
-		self.run_bot()
-		self.run_schedule()
-
-
+		
+		
 	def access_home_site(self):     
 		request = requests.get('https://www.supremenewyork.com/shop/all/')
 		if request.status_code == 200:
 			print('Web site is now open for shopping!')
 			schedule.clear('kicked-out')
+			schedule.every(3).seconds.do(self.is_kicked_out) 		
 			self.run_bot()
 		else:
 			print('Supreme site isnt open now') 
 
 
-	def run_bot(self):
+	def run_schedule(self):
+		while True:
+			schedule.run_pending()
+			time.sleep(1)
 
-		#schedule.every(4).seconds.do(self.access_home_site).tag('kicked-out')   
-		schedule.every(3.5).seconds.do(self.is_kicked_out)
+
+	def start_schedule(self):
+		print('------ Waiting for exact time to run bot --------')
+		schedule.every().saturday.at("23:01").do(self.access_home_site)
+		self.run_schedule()
+
+
+	def run_bot(self):
 		# self.run_schedule()
-		self.read_json_clothing_orders()
+		self.read_run_clothing_orders()
 		
 		"""
 		Close entire application
@@ -73,8 +76,7 @@ class SupremeWeb(object):
 		sys.exit(1)
 		"""
 
-
-	def read_json_clothing_orders(self):
+	def read_run_clothing_orders(self):
 
 		with open('customer.json') as file:
 			json_file = json.load(file)
@@ -93,29 +95,26 @@ class SupremeWeb(object):
 
 					#Tuple data structure to perserve/pack clothing information together
 					clothing_info = (name, color, size)             
-					self.search_match_clothes(clothing_info)			
+				
+				self.search_match_clothes(clothing_info)			
 
 			file.close()
 
-
 			self.read_json_paymentinfo()    
 					  
+
 
 
 	def is_kicked_out(self):
 		current_url = self.driver.current_url
 
 		#We are kicked out of page. Website error due to traffic
-		if 'out_of_stock' in current_url:
+		if 'out_of_stock' in current_url :
 			schedule.every(3).seconds.do(self.access_home_site).tag('kicked-out')   
 		else:
 			print('Not kicked out yet')
 
 
-	def run_schedule(self):
-		while True:
-			schedule.run_pending()
-			time.sleep(1)
 
 			
 	def load_clothing_page(self, clothing_article):
@@ -245,14 +244,20 @@ class SupremeWeb(object):
 
 			for index, tag in enumerate(select_tags):
 
-				element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))        
-				action.move_to_element(element)
-					
+				"""
+				action.move_to_element(element)	
 				select = Select(element)
 				select.select_by_value(dropdown_payment_info[index])
+				"""
 
+				element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))        
+				self.driver.execute_script("arguments[0].click();", element)
+
+
+			# Check terms and agreement button
 			action.click(self.driver.find_elements_by_css_selector('.iCheck-helper')[1]);
 			
+
 			self.click_payment_button(action)
 
 		except TimeoutException as e:

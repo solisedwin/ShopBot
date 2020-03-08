@@ -28,10 +28,10 @@ class SupremeBot(object):
 		proxies = self.proxy_scrap()
 		proxy = self.get_proxy_config(proxies)
 
-		user_agent = self.get_user_agent()
+		#user_agent = self.get_user_agent()
 
 		profile = webdriver.FirefoxProfile()
-		profile.set_preference("general.useragent.override", user_agent)
+		profile.set_preference("general.useragent.override", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0")
 
 		driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
 		return driver
@@ -56,7 +56,7 @@ class SupremeBot(object):
 			print('~~ Error trying to get proxy')
 			print('~~Error: ' + str(e))
 		return proxies
-
+		
 
 	def get_proxy_config(self,proxies):
 

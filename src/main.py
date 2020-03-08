@@ -13,8 +13,10 @@ class MainClass(object):
 	
 	def main(self):
 		botObject = SupremeBot()
-		bot = botObject.create_bot() 
-		web	= SupremeWeb(bot)
+		bot_config = botObject.create_bot() 
+		surpeme_bot = SupremeWeb(bot_config)
+
+		surpeme_bot.start_schedule()
 
 
 
