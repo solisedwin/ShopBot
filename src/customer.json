@@ -1,10 +1,13 @@
 {
+
+	"max_spending_cost" : "60",
+
 		"orders": {
 			
 			"shirts": [	
 				{
-					"name": "Tupac Hologram Tee",
-					"color": "Black",
+					"name": "Oxford Shirt",
+					"color": "Orange",
 					"size": "S"
 				},	
 
@@ -15,6 +18,13 @@
 				}
 
 			],
+
+			"tops_sweaters": [{
+				"name": "Patchwork S/S Top",
+				"color": "White",
+				"size": "L"
+			}],
+
 
 			"pants": [{
 				"name": "GORE-TEX Pant",
