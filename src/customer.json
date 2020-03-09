@@ -1,6 +1,6 @@
 {
 
-	"max_spending_cost" : "60",
+	"max_spending_cost" : "50",
 
 		"orders": {
 			
@@ -44,8 +44,8 @@
 
 			"name": "John Doe",
 			"email": "john_doe_fake@aol.com",
-			"phone": "1111111111",
-			"address": "78 fake address ave",
+			"phone": "4683356255717466",
+			"address": "78 fake ave",
 			"apt_num": "3L",
 			"zip": "12345",
 			"town": "Oniondale",

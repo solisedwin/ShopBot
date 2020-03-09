@@ -1,9 +1,6 @@
-
-
 from bot import SupremeBot
 from supreme import SupremeWeb
 import time
-
 
 class MainClass(object):
 

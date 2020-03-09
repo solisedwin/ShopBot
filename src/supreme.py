@@ -40,18 +40,16 @@ class SupremeWeb(object):
 
 	def __init__(self, driver):
 		self.driver = driver
-		self.delay = 3.5
+		self.delay = 20
 		self.current_payment_total = 0
 		self.max_spending_cost = 0
-
-
 		# Init value when we start at the home page
 		#self.site_status = "supremenewyork"
 
 
 	def start_schedule(self):
 		print('------ Waiting for exact time to run bot --------')
-		schedule.every().sunday.at("01:20").do(self.access_home_site)
+		schedule.every().monday.at("16:00").do(self.access_home_site)
 		self.run_schedule()
 
 
@@ -69,11 +67,21 @@ class SupremeWeb(object):
 		if request.status_code == 200:
 			print('Web site is now open for shopping!')
 			schedule.clear('kicked-out')
-			schedule.every(3).seconds.do(self.is_kicked_out) 		
+			schedule.every(3.5).seconds.do(self.is_kicked_out) 		
 			self.run_bot()
 		else:
 			print('Supreme site isnt open now') 
 
+
+	def is_kicked_out(self):
+		current_url = self.driver.current_url
+
+		#We are kicked out of page. Website error due to traffic
+		if 'out_of_stock' in current_url or self.site_status not in current_url:
+			print('##### Kicked out of web site! ######')
+			schedule.every(1.5).seconds.do(self.access_home_site).tag('kicked-out')   
+		else:
+			print('Not kicked out yet')
 
 
 	def run_bot(self):
@@ -90,12 +98,18 @@ class SupremeWeb(object):
 
 		with open('customer.json') as file:
 			json_file = json.load(file)
-			self.max_spending_cost = int(json_file['max_spending_cost'])
+			#self.max_spending_cost = int(json_file['max_spending_cost'])
 
-			clothes = json_file['orders']
+			clothes = json_file	['orders']
 
 			for clothing_article in clothes:
 			
+				"""
+				if (self.current_payment_total >= self.max_spending_cost):
+					print("--- Exceed max amount of spending. Now preceding to checkout ---")
+					break	
+				"""
+
 				clothing_article = clothing_article.strip()
 				self.load_clothing_page(clothing_article)
 
@@ -109,27 +123,12 @@ class SupremeWeb(object):
 
 					#Tuple data structure to perserve/pack clothing information together
 					clothing_info = (name, color, size)             
-
 		
-				self.search_match_clothes(clothing_info)			
+				self.search_match_clothes(clothing_info)	
 
 			file.close()
-
 			self.read_pay_json_paymentinfo()    
-					  
-
-
-
-	def is_kicked_out(self):
-		current_url = self.driver.current_url
-
-		#We are kicked out of page. Website error due to traffic
-		if 'out_of_stock' in current_url or self.site_status not in current_url:
-			print('##### Kicked out of web site! ######')
-			schedule.every(3).seconds.do(self.access_home_site).tag('kicked-out')   
-		else:
-			print('Not kicked out yet')
-
+					 
 
 			
 	def load_clothing_page(self, clothing_article):
@@ -151,8 +150,7 @@ class SupremeWeb(object):
 			
 		print("Looking at " + str(clothing_name) + " with color " + str(clothing_color) + " at size " + str(clothing_size))
 
-		try:
-			
+		try:			
 			supreme_item_div = self.driver.find_element_by_xpath(item_xpath_locator)            
 			self.driver.execute_script("arguments[0].scrollIntoView(true);", supreme_item_div);
 
@@ -189,41 +187,41 @@ class SupremeWeb(object):
 		
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.element_to_be_clickable((By.ID, "details")))      
-		
-		
+		"""
 		if( self.does_item_exceed_spending_amount() ):
-			print("$$$ Item exceeds maximum spending amount ! Cant be added $$$")
+			print("$$$ Adding item would exceeds maximum spending amount of {} ! Cant be added $$$".format(self.max_spending_cost))
 		else: 
+		"""
+		add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
+		
+		action = ActionChains(self.driver)
+		hov = action.move_to_element(add_to_cart_btn).click().perform()
 
-			add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
-			
-			action = ActionChains(self.driver)
-			hov = action.move_to_element(add_to_cart_btn).click().perform()
-
-			#wait.until(EC.presence_of_element_located((By.ID, "cart")))
-			wait.until(EC.presence_of_element_located((By.CLASS_NAME, "in-cart")))
-			
-			print('** Added item to cart ** ')
-			print()
+		#wait.until(EC.presence_of_element_located((By.ID, "cart")))
+		wait.until(EC.presence_of_element_located((By.CLASS_NAME, "in-cart")))
+		
+		print('** Added item to cart ** ')
+		print()
 
 		
 	def click_item(self, item):
 		action = ActionChains(self.driver)
 		action.click(item).perform()
 
-
+	
+	"""
 	def does_item_exceed_spending_amount(self):
 		
 		item_cost = self.driver.find_element_by_xpath("//span[@data-currency='USD']")
 		#Remove dollar sign $
 		item_cost_value = int(item_cost.text[1 : ])
 		
-
 		if ( item_cost_value + self.current_payment_total > self.max_spending_cost  ):
 			return True
 		else:
 			self.current_payment_total += item_cost_value
 			return False
+	"""
 
 
 	def read_pay_json_paymentinfo(self):
@@ -258,13 +256,14 @@ class SupremeWeb(object):
 
 	def checkout_items(self, payment_information, dropdown_payment_info):
 
-
 		#Redirect to process page
 		self.driver.get("https://www.supremenewyork.com/checkout")
 		self.site_status = "checkout"
 
+		time.sleep(1)
+
 		try:
-			wait = WebDriverWait(self.driver,4)
+			wait = WebDriverWait(self.driver,self.delay)
 			wait.until(EC.presence_of_element_located((By.ID, "cart-body")))
 			#All input tags
 			input_tags = self.driver.find_elements_by_css_selector('input.string')
@@ -278,27 +277,31 @@ class SupremeWeb(object):
 
 
 			for index, tag in enumerate(select_tags):
-
-				"""
-				action.move_to_element(element)	
-				select = Select(element)
-				select.select_by_value(dropdown_payment_info[index])
-				"""
-
 				element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))        
 				self.driver.execute_script("arguments[0].click();", element)
 
 
 			# Check terms and agreement button
 			action.click(self.driver.find_elements_by_css_selector('.iCheck-helper')[1]);
-			
-
 			self.click_payment_button(action)
+
+			#self.confirmation_page()
 
 		except TimeoutException as e:
 			print("@@ Too much time has passed to checkout/load payment page")
-			self.run_bot()
+			self.checkout_items(payment_information, dropdown_payment_info)
+
+		#self.has_confirmation_error()	
+
 	
+	def has_confirmation_error(self):
+		
+		wait = WebDriverWait(self.driver,self.delay)
+		confirmation_tab = wait.until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "selected")]/b[text()="CONFIRMATION"]')))
+
+		failed_card_message = self.driver.find_element_by_css_selector(".failed")
+		self.driver.back()
+
 
 
 	def click_payment_button(self, action):
