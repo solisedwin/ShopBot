@@ -47,6 +47,7 @@ class SupremeBot(object):
 
 		parser = fromstring(response.text)
 		proxies = set()
+		
 
 		try:
 			for i in parser.xpath('//tbody/tr')[:5]:

@@ -38,18 +38,22 @@ and //*//text()[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijkl
 
 class SupremeWeb(object):
 
-	def __init__(self, driver):
+	def __init__(self, driver, item_name, item_color, item_size):
 		self.driver = driver
 		self.delay = 20
 		self.current_payment_total = 0
 		self.max_spending_cost = 0
-		# Init value when we start at the home page
+		#Init value when we start at the home page
 		#self.site_status = "supremenewyork"
+
+		self.item_name = item_name
+		self.item_color = item_color
+		self.item_size = item_size
 
 
 	def start_schedule(self):
 		print('------ Waiting for exact time to run bot --------')
-		schedule.every().monday.at("16:00").do(self.access_home_site)
+		schedule.every().tuesday.at("01:15").do(self.access_home_site)
 		self.run_schedule()
 
 
@@ -86,9 +90,14 @@ class SupremeWeb(object):
 
 	def run_bot(self):
 		# self.run_schedule()
-		self.read_run_clothing_orders()
 		
+		clothing_info = (self.item_name, self.item_color, self.item_size)
+		self.search_match_clothes(clothing_info)
+		self.read_pay_json_paymentinfo() 
+
+
 		"""
+		self.read_run_clothing_orders()
 		Close entire application
 		self.driver.close()       
 		sys.exit(1)
@@ -142,7 +151,7 @@ class SupremeWeb(object):
 
 	def search_match_clothes(self, clothing_info):  
 
-		clothing_name = clothing_info[0]
+		clothing_name = clothing_info[0].replace('_',' ')
 		clothing_color = clothing_info[1]
 		clothing_size = clothing_info[2]
 

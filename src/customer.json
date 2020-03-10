@@ -9,15 +9,7 @@
 					"name": "Oxford Shirt",
 					"color": "Orange",
 					"size": "S"
-				},	
-
-				{
-					"name": "Naomi Tee",
-					"color": "White",
-					"size": "M"
-				}
-
-			],
+				}],
 
 			"tops_sweaters": [{
 				"name": "Patchwork S/S Top",
