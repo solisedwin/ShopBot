@@ -38,7 +38,7 @@ and //*//text()[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijkl
 
 class SupremeWeb(object):
 
-	def __init__(self, driver, item_name, item_color, item_size):
+	def __init__(self, driver, item_clothing_article , item_name, item_color, item_size):
 		self.driver = driver
 		self.delay = 20
 		self.current_payment_total = 0
@@ -46,6 +46,7 @@ class SupremeWeb(object):
 		#Init value when we start at the home page
 		#self.site_status = "supremenewyork"
 
+		self.clothing_article = item_clothing_article
 		self.item_name = item_name
 		self.item_color = item_color
 		self.item_size = item_size
@@ -53,7 +54,7 @@ class SupremeWeb(object):
 
 	def start_schedule(self):
 		print('------ Waiting for exact time to run bot --------')
-		schedule.every().tuesday.at("01:15").do(self.access_home_site)
+		schedule.every().tuesday.at("22:51").do(self.access_home_site)
 		self.run_schedule()
 
 
@@ -92,8 +93,9 @@ class SupremeWeb(object):
 		# self.run_schedule()
 		
 		clothing_info = (self.item_name, self.item_color, self.item_size)
+		self.load_clothing_page(self.clothing_article)
 		self.search_match_clothes(clothing_info)
-		self.read_pay_json_paymentinfo() 
+		
 
 
 		"""
@@ -118,8 +120,7 @@ class SupremeWeb(object):
 					print("--- Exceed max amount of spending. Now preceding to checkout ---")
 					break	
 				"""
-
-				clothing_article = clothing_article.strip()
+				clothing_article = clothing_rticle.strip()
 				self.load_clothing_page(clothing_article)
 
 				self.site_status = clothing_article.lower()
@@ -143,7 +144,6 @@ class SupremeWeb(object):
 	def load_clothing_page(self, clothing_article):
 
 		url = "https://www.supremenewyork.com/shop/all/{}".format(clothing_article)
-
 		self.driver.get(url)
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.presence_of_element_located((By.ID, "container")))
@@ -175,9 +175,11 @@ class SupremeWeb(object):
 
 			if 'sold out' in tag_text:
 				print("~~ Item is sold out ")
+				self.driver.quit()
 
 			else:               
 				self.add_to_cart(sold_out_tag)
+				self.read_pay_json_paymentinfo() 
 				"""
 				self.driver.back()
 				self.driver.refresh();
@@ -270,6 +272,8 @@ class SupremeWeb(object):
 		self.site_status = "checkout"
 
 		time.sleep(1)
+
+		print('------ Check out page -------')
 
 		try:
 			wait = WebDriverWait(self.driver,self.delay)

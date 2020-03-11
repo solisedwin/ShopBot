@@ -23,12 +23,14 @@ class Bot_Subprocess(object):
 				self.site_status = clothing_article.lower()
 
 				for info in clothes[clothing_article]:
+
+					clothing_article = clothing_article.strip()
 					name = info['name'].replace(' ', '_').strip()
 					color = info['color'].strip()
 					size = info['size'].strip()
 
 					#Tuple data structure to perserve/pack clothing information together
-					clothing_info = (name, color, size)             
+					clothing_info = (clothing_article, name, color, size)             
 					clothing_list.append(clothing_info)
 
 			file.close()
@@ -39,16 +41,25 @@ class Bot_Subprocess(object):
 		clothing_list = self.read_json_clothing_items()
 
 		for clothing_info_tuple in clothing_list:	
-			name = clothing_info_tuple[0]
-			color = clothing_info_tuple[1]
-			size = clothing_info_tuple[2]
-			self.run_subprocess(name = name, color = color, size = size)
+			article = clothing_info_tuple[0]
+			name = clothing_info_tuple[1]
+			color = clothing_info_tuple[2]
+			size = clothing_info_tuple[3]
+			self.run_subprocess(article = article,  name = name, color = color, size = size)
 
 
-	def run_subprocess(self, name , color, size):
-		script = 'main.py --name={} --color={} --size={}'.format(name, color, size)
-		proc = subprocess.Popen(['gnome-terminal', '-x', 'python', script])
+	def run_subprocess(self, article, name , color, size):
+		
+		article_arg = '-a={}'.format(article)
+		name_arg = '-n={}'.format(name)
+		color_arg = '-c={}'.format(color)
+		size_arg = '-s={}'.format(size)
+
+		arguments = [article_arg , name_arg , color_arg, size_arg]
+
+		proc = subprocess.Popen(['gnome-terminal', '-x', 'python', 'main.py'] +  arguments)
 		proc.wait()
+
 
 
 if __name__ == '__main__':

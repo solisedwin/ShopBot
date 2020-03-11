@@ -4,32 +4,23 @@
 
 		"orders": {
 			
-			"shirts": [	
-				{
-					"name": "Oxford Shirt",
-					"color": "Orange",
-					"size": "S"
-				}],
-
-			"tops_sweaters": [{
-				"name": "Patchwork S/S Top",
-				"color": "White",
-				"size": "L"
-			}],
-
-
-			"pants": [{
-				"name": "GORE-TEX Pant",
-				"color": "Black",
-				"size": "L"
-			}],
-
 			"hats" : [{
 				"name": "Field Camp Cap",
 				"color": "Red",
 				"size": ""
-			}]
+			}], 
 
+			"shirts" : [{
+				"name": "Oxford Shirt",
+				"color": "Orange",
+				"size": ""
+			}],
+
+			"pants":[{
+				"name":"GORE-TEX",
+				"color":"Black",
+				"size":"M"
+			}]
 		},
 
 		"payment": {
