@@ -40,11 +40,11 @@ class SupremeWeb(object):
 
 	def __init__(self, driver, item_clothing_article , item_name, item_color, item_size):
 		self.driver = driver
-		self.delay = 20
+		self.delay = 21
 		self.current_payment_total = 0
 		self.max_spending_cost = 0
 		#Init value when we start at the home page
-		#self.site_status = "supremenewyork"
+		self.site_status = "supremenewyork"
 
 		self.clothing_article = item_clothing_article
 		self.item_name = item_name
@@ -54,7 +54,7 @@ class SupremeWeb(object):
 
 	def start_schedule(self):
 		print('------ Waiting for exact time to run bot --------')
-		schedule.every().tuesday.at("22:51").do(self.access_home_site)
+		schedule.every().wednesday.at("00:59").do(self.access_home_site)
 		self.run_schedule()
 
 
@@ -72,7 +72,6 @@ class SupremeWeb(object):
 		if request.status_code == 200:
 			print('Web site is now open for shopping!')
 			schedule.clear('kicked-out')
-			schedule.every(3.5).seconds.do(self.is_kicked_out) 		
 			self.run_bot()
 		else:
 			print('Supreme site isnt open now') 
@@ -84,61 +83,18 @@ class SupremeWeb(object):
 		#We are kicked out of page. Website error due to traffic
 		if 'out_of_stock' in current_url or self.site_status not in current_url:
 			print('##### Kicked out of web site! ######')
-			schedule.every(1.5).seconds.do(self.access_home_site).tag('kicked-out')   
+			schedule.every(2.5).seconds.do(self.access_home_site).tag('kicked-out')   
 		else:
 			print('Not kicked out yet')
 
 
 	def run_bot(self):
 		# self.run_schedule()
+		schedule.every(3.5).seconds.do(self.is_kicked_out) 		
 		
 		clothing_info = (self.item_name, self.item_color, self.item_size)
 		self.load_clothing_page(self.clothing_article)
 		self.search_match_clothes(clothing_info)
-		
-
-
-		"""
-		self.read_run_clothing_orders()
-		Close entire application
-		self.driver.close()       
-		sys.exit(1)
-		"""
-
-	def read_run_clothing_orders(self):
-
-		with open('customer.json') as file:
-			json_file = json.load(file)
-			#self.max_spending_cost = int(json_file['max_spending_cost'])
-
-			clothes = json_file	['orders']
-
-			for clothing_article in clothes:
-			
-				"""
-				if (self.current_payment_total >= self.max_spending_cost):
-					print("--- Exceed max amount of spending. Now preceding to checkout ---")
-					break	
-				"""
-				clothing_article = clothing_rticle.strip()
-				self.load_clothing_page(clothing_article)
-
-				self.site_status = clothing_article.lower()
-
-				for info in clothes[clothing_article]:
-
-					name = info['name'].strip()
-					color = info['color'].strip()
-					size = info['size'].strip()
-
-					#Tuple data structure to perserve/pack clothing information together
-					clothing_info = (name, color, size)             
-		
-				self.search_match_clothes(clothing_info)	
-
-			file.close()
-			self.read_pay_json_paymentinfo()    
-					 
 
 			
 	def load_clothing_page(self, clothing_article):
@@ -183,7 +139,7 @@ class SupremeWeb(object):
 				"""
 				self.driver.back()
 				self.driver.refresh();
-					"""	
+				"""	
 		
 		except NoSuchElementException as no_element:
 			print('~~ Element cant be found. Perhaps has been removed from website')
@@ -194,25 +150,33 @@ class SupremeWeb(object):
 
 	def add_to_cart(self, item):
 
-		self.click_item(item)
-		
-		wait = WebDriverWait(self.driver, self.delay)
-		wait.until(EC.element_to_be_clickable((By.ID, "details")))      
-		"""
-		if( self.does_item_exceed_spending_amount() ):
-			print("$$$ Adding item would exceeds maximum spending amount of {} ! Cant be added $$$".format(self.max_spending_cost))
-		else: 
-		"""
-		add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
-		
-		action = ActionChains(self.driver)
-		hov = action.move_to_element(add_to_cart_btn).click().perform()
+		try:
+			time.sleep(1)
+			self.click_item(item)
+			wait = WebDriverWait(self.driver, self.delay)
+			wait.until(EC.element_to_be_clickable((By.ID, "details")))      
+			"""
+			if( self.does_item_exceed_spending_amount() ):
+				print("$$$ Adding item would exceeds maximum spending amount of {} ! Cant be added $$$".format(self.max_spending_cost))
+			else: 
+			"""
+			add_to_cart_btn = self.driver.find_element_by_css_selector('#add-remove-buttons > input');              
+			
+			action = ActionChains(self.driver)
+			hov = action.move_to_element(add_to_cart_btn).click().perform()
 
-		#wait.until(EC.presence_of_element_located((By.ID, "cart")))
-		wait.until(EC.presence_of_element_located((By.CLASS_NAME, "in-cart")))
+			#wait.until(EC.presence_of_element_located((By.ID, "cart")))
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, "in-cart")))
+			
+			print('** Added item to cart ** ')
+			print()	
 		
-		print('** Added item to cart ** ')
-		print()
+		except TimeoutException as e:
+			print('~~ Timeout Exception. Element isnt being added to cart')
+			self.add_to_cart(item)
+
+
+
 
 		
 	def click_item(self, item):

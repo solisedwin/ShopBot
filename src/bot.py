@@ -34,7 +34,7 @@ class SupremeBot(object):
 		profile.set_preference("general.useragent.override", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0")
 
 		driver = webdriver.Firefox(options = options, proxy = proxy, firefox_profile = profile)
-		driver.set_window_size(800, 700)
+		driver.set_window_size(690, 650)
 		driver.set_window_position(1000, 50)
 
 		return driver
