@@ -26,7 +26,7 @@ import requests
 import json
 import sys
 
-
+   
 """
 TODO:
 - Ingore case for Clothing Item name and color. Change xpath 
