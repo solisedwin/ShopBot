@@ -1,0 +1,50 @@
+{
+
+	"max_spending_cost" : "50",
+
+		"orders": {
+			"shirts" : [
+			 {
+				"name": "Printed Plaid Shirt",
+				"color": "Red",
+				"size": "M"
+			}] ,
+
+
+			"jackets": [
+
+				{
+
+				"name": "RTG Fleece Jacket",
+				"color": "Gold",
+				"size": "M"
+
+			}] ,
+
+			"pants" : [
+			 {
+				"name": "Work Pant",
+				"color": "Pink",
+				"size": "30"
+			}] 
+		},
+
+		"payment": {
+
+			"name": "John Doe",
+			"email": "john_doe_fake@aol.com",
+			"phone": "468 335 4821",
+			"address": "78 fake ave",
+			"apt_num": "3L",
+			"zip": "12345",
+			"town": "Oniondale",
+			"card": "6214839819648247",
+			"cvv": "504",
+
+			"state": "NY",
+			"country":"USA",
+			"card_expiration_month": "01",
+			"card_expiration_year": "2025"
+
+		}
+}
