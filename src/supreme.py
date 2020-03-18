@@ -17,8 +17,9 @@ from selenium.webdriver.common.proxy import *
 from bs4 import BeautifulSoup 
 from urllib.request import Request, urlopen
 
-
 import time
+from datetime import datetime
+
 import schedule
 import random	
 import requests
@@ -28,9 +29,7 @@ import sys
 
 """
 TODO:
--Loading takes too much time or cant find element (handle error)
 - Ingore case for Clothing Item name and color. Change xpath 
-
 
 ('//div[@class="inner-article" and //*//text()[contains(translate(.,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"), "Bling Tee")] 
 and //*//text()[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"Red")] ]')
@@ -40,21 +39,21 @@ class SupremeWeb(object):
 
 	def __init__(self, driver, item_clothing_article , item_name, item_color, item_size):
 		self.driver = driver
-		self.delay = 21
-		self.current_payment_total = 0
-		self.max_spending_cost = 0
+		self.delay = 22
+		
 		#Init value when we start at the home page
 		self.site_status = "supremenewyork"
 
 		self.clothing_article = item_clothing_article
+
 		self.item_name = item_name
 		self.item_color = item_color
 		self.item_size = item_size
 
 
-	def start_schedule(self):
-		print('------ Waiting for exact time to run bot --------')
-		schedule.every().wednesday.at("00:59").do(self.access_home_site)
+	def start_schedule(self):		
+		print('------ Waiting for exact time to run bot --------')	
+		schedule.every().tuesday.at("23:46").do(self.checking_site_access , first_time_access = True)		
 		self.run_schedule()
 
 
@@ -64,37 +63,55 @@ class SupremeWeb(object):
 			time.sleep(1)
 
 		
-	def access_home_site(self):    
+	def checking_site_access(self, first_time_access = False):    
 
-		self.site_status = "supremenewyork"
+		current_url = self.driver.current_url
+		clothing_article_url = 	"https://www.supremenewyork.com/shop/all/{}".format(self.clothing_article)
 
-		request = requests.get('https://www.supremenewyork.com/shop/all/')
-		if request.status_code == 200:
-			print('Web site is now open for shopping!')
-			schedule.clear('kicked-out')
+		url = clothing_article_url if first_time_access else current_url
+		request = requests.get(url)
+
+		if request.status_code != 200:
+			print('~~ 200 Status code error. Site cant be loaded. Trying again')
+			self.driver.implicitly_wait(1.5)
+			self.checking_site_access(first_time_access = first_time_access)
+
+		#We were kicked out of website probably due to high traffic/bot detection. Run again from home page
+		elif 'out_of_stock' in current_url or (self.site_status not in current_url and not first_time_access):
+			print('### Kicked out of web site !!! ###')
+			self.driver.implicitly_wait(1.5)
+			self.run_bot()
+		elif first_time_access:
+			print('@@ Entering Supreme Site @@')
 			self.run_bot()
 		else:
-			print('Supreme site isnt open now') 
+			#We are in the middle of running the bot now. No errors (kicked out) have been made
+			print('* Havent been kicked out, still running fine *')
+			pass
 
-
+	
 	def is_kicked_out(self):
 		current_url = self.driver.current_url
 
 		#We are kicked out of page. Website error due to traffic
 		if 'out_of_stock' in current_url or self.site_status not in current_url:
 			print('##### Kicked out of web site! ######')
-			schedule.every(2.5).seconds.do(self.access_home_site).tag('kicked-out')   
+			schedule.every(3).seconds.do(self.checking_site_access).tag('kicked-out')   
 		else:
 			print('Not kicked out yet')
 
 
 	def run_bot(self):
-		# self.run_schedule()
-		schedule.every(3.5).seconds.do(self.is_kicked_out) 		
+		
+		schedule.every(4).seconds.do(self.checking_site_access, first_time_access = False) 	
 		
 		clothing_info = (self.item_name, self.item_color, self.item_size)
 		self.load_clothing_page(self.clothing_article)
-		self.search_match_clothes(clothing_info)
+
+		#Get current time to always refresh site in case item isnt founded yet. 
+		currentDT = datetime.now()
+
+		self.search_match_clothes(clothing_info, previous_time_minute = currentDT.minute)
 
 			
 	def load_clothing_page(self, clothing_article):
@@ -103,9 +120,11 @@ class SupremeWeb(object):
 		self.driver.get(url)
 		wait = WebDriverWait(self.driver, self.delay)
 		wait.until(EC.presence_of_element_located((By.ID, "container")))
-	
+		
+		self.site_status = clothing_article
 
-	def search_match_clothes(self, clothing_info):  
+
+	def search_match_clothes(self, clothing_info, previous_time_minute,):  
 
 		clothing_name = clothing_info[0].replace('_',' ')
 		clothing_color = clothing_info[1]
@@ -132,17 +151,28 @@ class SupremeWeb(object):
 			if 'sold out' in tag_text:
 				print("~~ Item is sold out ")
 				self.driver.quit()
+				sys.exit(1)
 
 			else:               
 				self.add_to_cart(sold_out_tag)
 				self.read_pay_json_paymentinfo() 
-				"""
-				self.driver.back()
-				self.driver.refresh();
-				"""	
-		
+				
 		except NoSuchElementException as no_element:
-			print('~~ Element cant be found. Perhaps has been removed from website')
+
+			current_time = datetime.now()
+			current_time_minute = current_time.minute	
+			#We only allow refreshing to find item, for 3 mintues
+			if(current_time_minute == previous_time_minute + 3 ):
+				print('~~ Cant find element {} {} after 3 extra minutes. Closing application'.format(clothing_name, clothing_color))
+				time.sleep(4)
+				self.driver.quit()
+				sys.exit(1)
+			else:
+				print('~~ Element cant be found. Refreshing website to check again')
+				self.driver.refresh()
+				self.search_match_clothes(clothing_info, previous_time_minute)
+
+
 		except Exception as e:
 			print('~~ Error: ' + str(e))
 
@@ -151,7 +181,6 @@ class SupremeWeb(object):
 	def add_to_cart(self, item):
 
 		try:
-			time.sleep(1)
 			self.click_item(item)
 			wait = WebDriverWait(self.driver, self.delay)
 			wait.until(EC.element_to_be_clickable((By.ID, "details")))      
@@ -175,31 +204,13 @@ class SupremeWeb(object):
 			print('~~ Timeout Exception. Element isnt being added to cart')
 			self.add_to_cart(item)
 
-
-
-
 		
 	def click_item(self, item):
 		action = ActionChains(self.driver)
 		action.click(item).perform()
 
-	
-	"""
-	def does_item_exceed_spending_amount(self):
-		
-		item_cost = self.driver.find_element_by_xpath("//span[@data-currency='USD']")
-		#Remove dollar sign $
-		item_cost_value = int(item_cost.text[1 : ])
-		
-		if ( item_cost_value + self.current_payment_total > self.max_spending_cost  ):
-			return True
-		else:
-			self.current_payment_total += item_cost_value
-			return False
-	"""
-
-
 	def read_pay_json_paymentinfo(self):
+
 		with open('customer.json') as file:
 
 			json_file = json.load(file) 	
@@ -235,8 +246,6 @@ class SupremeWeb(object):
 		self.driver.get("https://www.supremenewyork.com/checkout")
 		self.site_status = "checkout"
 
-		time.sleep(1)
-
 		print('------ Check out page -------')
 
 		try:
@@ -257,7 +266,6 @@ class SupremeWeb(object):
 				element = WebDriverWait(self.driver, 4).until(EC.element_to_be_clickable((By.ID, tag.get_attribute("id"))))        
 				self.driver.execute_script("arguments[0].click();", element)
 
-
 			# Check terms and agreement button
 			action.click(self.driver.find_elements_by_css_selector('.iCheck-helper')[1]);
 			self.click_payment_button(action)
@@ -265,20 +273,25 @@ class SupremeWeb(object):
 			#self.confirmation_page()
 
 		except TimeoutException as e:
-			print("@@ Too much time has passed to checkout/load payment page")
+			print("@@ Too much time has passed to checkout/load payment page @@")
 			self.checkout_items(payment_information, dropdown_payment_info)
 
-		#self.has_confirmation_error()	
-
 	
-	def has_confirmation_error(self):
+	def confirmation_page(self):
 		
-		wait = WebDriverWait(self.driver,self.delay)
-		confirmation_tab = wait.until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "selected")]/b[text()="CONFIRMATION"]')))
+		# Wait for 6 mintues for confirmation payment page. At this point, we arent sure if order failed or sucessful went through
+		confirmation_wait = WebDriverWait(self.driver, 60 * 10)
+		confirmation_wait.until(EC.presence_of_element_located((By.ID, 'confirmation')))
 
-		failed_card_message = self.driver.find_element_by_css_selector(".failed")
-		self.driver.back()
-
+		has_failed_confirmation =  bool(self.driver.find_element_by_xpath('//div[contains(@class,"failed")]'));
+		
+		if(has_failed_confirmation):
+			self.driver.back()
+		else:
+			self.driver.implicitly_wait(15)
+			self.driver.quit()
+			sys.exit(1)
+	
 
 
 	def click_payment_button(self, action):

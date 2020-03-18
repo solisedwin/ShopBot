@@ -49,8 +49,8 @@ class Bot_Subprocess(object):
 
 
 	def run_subprocess(self, article, name , color, size):
-		
-		article_arg = '-a={}'.format(article)
+	
+		article_arg = '-a={}'.format(article)	
 		name_arg = '-n={}'.format(name)
 		color_arg = '-c={}'.format(color)
 		size_arg = '-s={}'.format(size)

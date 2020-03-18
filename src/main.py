@@ -24,6 +24,7 @@ class MainClass(object):
 		args = parser.parse_args()
 
 		item_clothing_article = args.article
+		
 		item_name = args.name
 		item_color = args.color
 		item_size = args.size
