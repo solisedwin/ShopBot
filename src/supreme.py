@@ -53,7 +53,7 @@ class SupremeWeb(object):
 
 	def start_schedule(self):		
 		print('------ Waiting for exact time to run bot --------')	
-		schedule.every().tuesday.at("23:46").do(self.checking_site_access , first_time_access = True)		
+		schedule.every().monday.at("16:21").do(self.checking_site_access , first_time_access = True)		
 		self.run_schedule()
 
 
@@ -73,13 +73,13 @@ class SupremeWeb(object):
 
 		if request.status_code != 200:
 			print('~~ 200 Status code error. Site cant be loaded. Trying again')
-			self.driver.implicitly_wait(1.5)
+			self.driver.implicitly_wait(1)
 			self.checking_site_access(first_time_access = first_time_access)
 
 		#We were kicked out of website probably due to high traffic/bot detection. Run again from home page
 		elif 'out_of_stock' in current_url or (self.site_status not in current_url and not first_time_access):
 			print('### Kicked out of web site !!! ###')
-			self.driver.implicitly_wait(1.5)
+			self.driver.implicitly_wait(1)
 			self.run_bot()
 		elif first_time_access:
 			print('@@ Entering Supreme Site @@')
@@ -87,7 +87,7 @@ class SupremeWeb(object):
 		else:
 			#We are in the middle of running the bot now. No errors (kicked out) have been made
 			print('* Havent been kicked out, still running fine *')
-			pass
+			
 
 	
 	def is_kicked_out(self):

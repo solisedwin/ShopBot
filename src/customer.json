@@ -3,18 +3,8 @@
 	"max_spending_cost" : "50",
 
 		"orders": {
-			"shirts" : [
-			 {
-				"name": "Printed Plaid Shirt",
-				"color": "Red",
-				"size": "M"
-			}] ,
-
-
-			"jackets": [
-
-				{
-
+			"jackets": [{
+				
 				"name": "RTG Fleece Jacket",
 				"color": "Gold",
 				"size": "M"
