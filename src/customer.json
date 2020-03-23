@@ -3,18 +3,17 @@
 	"max_spending_cost" : "50",
 
 		"orders": {
-			"jackets": [{
-				
-				"name": "RTG Fleece Jacket",
-				"color": "Gold",
-				"size": "M"
-
-			}] ,
-
 			"pants" : [
+			 
 			 {
+				"name": "Stone Washed",
+				"color": "Indigo",
+				"size": "30"
+			},
+
+			{
 				"name": "Work Pant",
-				"color": "Pink",
+				"color": "Navy",
 				"size": "30"
 			}] 
 		},
