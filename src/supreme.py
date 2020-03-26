@@ -53,7 +53,10 @@ class SupremeWeb(object):
 
     def start_schedule(self):       
         print('------ Waiting for exact time to run bot --------')  
-        schedule.every().monday.at("18:09").do(self.checking_site_access , first_time_access = True)        
+        #schedule.every().thursday.at("10:59:59").do(self.checking_site_access , first_time_access = True)        
+        
+        schedule.every().thursday.at("11:00").do(self.checking_site_access , first_time_access = True)        
+        
         self.run_schedule()
 
 
@@ -89,7 +92,6 @@ class SupremeWeb(object):
             print('* Havent been kicked out, still running fine *')
             
 
-    
     def is_kicked_out(self):
         current_url = self.driver.current_url
 

@@ -1,21 +1,41 @@
 {
-
-	"max_spending_cost" : "50",
-
+	
 		"orders": {
-			"pants" : [
-			 
-			 {
-				"name": "Stone Washed",
-				"color": "Indigo",
-				"size": "30"
-			},
 
-			{
-				"name": "Work Pant",
-				"color": "Navy",
-				"size": "30"
-			}] 
+			"sweatshirts" : [
+
+				{
+					"name" : "Timberland",
+					"color" : "Natural", 
+					"size" : "s"
+				},
+
+				{
+					"name" : "Timberland",
+					"color" : "Natural", 
+					"size" : "s"
+				},
+
+				{
+					"name" : "Timberland",
+					"color" : "Red", 
+					"size" : "s"
+				},
+
+				{
+					"name" : "Timberland",
+					"color" : "White", 
+					"size" : "s"
+				},
+
+				{
+					"name" : "Timberland",
+					"color" : "Cream", 
+					"size" : "s"
+				}
+
+			]
+
 		},
 
 		"payment": {
