@@ -1,5 +1,5 @@
 # ShopBot
-Selenium Python Webdriver, that searchs and buys products from Supremenewyork.com during drop time at 11:00 AM EST.
+Selenium Python Webdriver, that searchs and buys products from Supremenewyork.com during drop time at 11:00 AM EST. 
 
 ## Getting Started
 pip install -r requirements.txt
@@ -47,4 +47,7 @@ Payment Information
 
  === See customer.json for template example === 
   
-  
+ ## Note
+
+ShopBot runs multiple bots depending on number of items added to customer.json . User would have to monitor each terminal window to check if item is in the checkout proceess, then manually solve reCaptcha themselves. 
+ 
