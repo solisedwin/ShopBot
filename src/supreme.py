@@ -39,7 +39,7 @@ class SupremeWeb(object):
 
     def __init__(self, driver, item_clothing_article , item_name, item_color, item_size):
         self.driver = driver
-        self.delay = 22
+        self.delay = 20
         
         #Init value when we start at the home page
         self.site_status = "supremenewyork"
@@ -53,7 +53,7 @@ class SupremeWeb(object):
 
     def start_schedule(self):       
         print('------ Waiting for exact time to run bot --------')  
-        #schedule.every().thursday.at("10:59:59").do(self.checking_site_access , first_time_access = True)        
+        #schedule.every().thursday.at("10:59:58").do(self.checking_site_access , first_time_access = True)        
         
         schedule.every().thursday.at("11:00").do(self.checking_site_access , first_time_access = True)        
         
@@ -154,6 +154,7 @@ class SupremeWeb(object):
                 sys.exit(1)
             else:               
                 self.add_to_cart()
+                self.edit_cart_items()
                 self.read_pay_json_paymentinfo() 
                 
         except NoSuchElementException as no_element:
@@ -197,7 +198,6 @@ class SupremeWeb(object):
             hov = action.move_to_element(add_to_cart_btn).click().perform()
 
             #wait.until(EC.presence_of_element_located((By.ID, "cart")))
-
             wait = WebDriverWait(self.driver, self.delay)
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "in-cart")))
             print('** Added item to cart ** \n')
@@ -210,6 +210,21 @@ class SupremeWeb(object):
     def click_item(self, item):
         action = ActionChains(self.driver)
         action.click(item).perform()
+
+
+    def edit_cart_items(self):
+
+    	self.driver.get("https://www.supremenewyork.com/shop/cart")
+
+    	out_of_stock_items = self.driver.find_elements_by_css_selector('tr.out_of_stock')
+
+    	#Have to remove items
+    	if (len(out_of_stock_items) > 0):
+    		pass
+		
+		    		
+
+
 
 
     # Read JSON file with user's card information, while also in payment page
