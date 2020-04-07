@@ -1,5 +1,5 @@
 # ShopBot
-Selenium Python Webdriver, that searchs and buys products from Supremenewyork.com during drop time at 11:00 AM EST. 
+Selenium Python Webdriver, that searchs and buys products from Supremenewyork.com during drop time at 11:00 AM EST. Each item to search for creates a new separate bot. 
 
 ## Getting Started
 pip install -r requirements.txt
