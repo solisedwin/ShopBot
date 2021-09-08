@@ -4,4 +4,4 @@ lib/
 /src/__pycache__/
 /src/geckodriver-v0.26.0-linux64.tar.gz
 src/geckodriver.log
-
+/src/*.gz
